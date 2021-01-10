@@ -176,29 +176,21 @@ function addJest(options: NormalizedSchema): Rule {
       testEnvironment: 'jsdom',
       babelJest: false,
     }),
-    !options.isVue3
-      ? updateJsonInTree(
-          `${options.projectRoot}/tsconfig.spec.json`,
-          (json) => {
-            json.include = json.include.filter(
-              (pattern) => !/\.jsx?$/.test(pattern)
-            );
-            json.compilerOptions = {
-              ...json.compilerOptions,
-              jsx: 'preserve',
-              esModuleInterop: true,
-              allowSyntheticDefaultImports: true,
-            };
-            return json;
-          }
-        )
-      : noop(),
+    updateJsonInTree(`${options.projectRoot}/tsconfig.spec.json`, (json) => {
+      json.include = json.include.filter((pattern) => !/\.jsx?$/.test(pattern));
+      if (!options.isVue3) {
+        json.compilerOptions = {
+          ...json.compilerOptions,
+          jsx: 'preserve',
+          esModuleInterop: true,
+          allowSyntheticDefaultImports: true,
+        };
+      }
+      return json;
+    }),
     (tree: Tree) => {
-      const tsOrBabelTransform = options.babel
-        ? `'^.+\\.[tj]sx?$': ['babel-jest', { cwd: __dirname, configFile: './babel.config.js' }]`
-        : `'^.+\\.tsx?$': 'ts-jest'`;
       const getVueJestPath = (file: string) =>
-        options.isVue3 ? `'<rootDir>/${file}'` : '`${__dirname}/' + file + '`';
+        options.isVue3 ? `'<rootDir>/${file}'` : `\`\${__dirname}/${file}\``;
       const content = tags.stripIndent`
         module.exports = {
           displayName: '${options.projectName}',
@@ -207,7 +199,7 @@ function addJest(options: NormalizedSchema): Rule {
             '^.+\\.vue$': 'vue-jest',
             '.+\\.(css|styl|less|sass|scss|svg|png|jpg|ttf|woff|woff2)$':
               'jest-transform-stub',
-            ${tsOrBabelTransform},
+            '^.+\\.tsx?$': 'ts-jest',
           },
           moduleFileExtensions: ["ts", "tsx", "vue", "js", "json"],
           coverageDirectory: '${offsetFromRoot(options.projectRoot)}coverage/${
@@ -215,7 +207,12 @@ function addJest(options: NormalizedSchema): Rule {
       }',
           snapshotSerializers: ['jest-serializer-vue'],
           globals: {
-            'ts-jest': { tsConfig: '<rootDir>/tsconfig.spec.json' },
+            'ts-jest': { 
+              tsConfig: '<rootDir>/tsconfig.spec.json',
+              ${
+                options.babel ? `babelConfig: '<rootDir>/babel.config.js',` : ''
+              }
+            },
             'vue-jest': {
               tsConfig: ${getVueJestPath('tsconfig.spec.json')},
               ${
@@ -300,7 +297,10 @@ function addBabel(options: NormalizedSchema) {
             presets: ["@vue/cli-plugin-babel/preset"]
           };`
       ),
-    addDepsToPackageJson({}, { '@vue/cli-plugin-babel': '~4.5.0' }),
+    addDepsToPackageJson(
+      { 'core-js': '^3.6.5' },
+      { '@vue/cli-plugin-babel': '~4.5.0' }
+    ),
   ]);
 }
 

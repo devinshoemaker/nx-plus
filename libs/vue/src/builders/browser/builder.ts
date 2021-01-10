@@ -47,7 +47,7 @@ export function runBuilder(
         modifyCachePaths(config, context);
         modifyTypescriptAliases(config, options, context);
         if (babelConfig) {
-          modifyBabelLoader(config, babelConfig, context);
+          modifyBabelLoader(config, babelConfig);
         }
       },
       publicPath: options.publicPath,

@@ -88,7 +88,7 @@ export function runBuilder(
         modifyCachePaths(config, context);
         modifyTypescriptAliases(config, browserOptions, context);
         if (babelConfig) {
-          modifyBabelLoader(config, babelConfig, context);
+          modifyBabelLoader(config, babelConfig);
         }
 
         if (!options.watch) {

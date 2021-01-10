@@ -158,11 +158,6 @@ describe('library schematic', () => {
 
       const jestConfig = tree.readContent('libs/my-lib/jest.config.js');
       expect(jestConfig).toContain(tags.indentBy(4)`
-        '^.+.[tj]sx?$': [
-          'babel-jest',
-          { cwd: __dirname, configFile: './babel.config.js' },
-        ],`);
-      expect(jestConfig).toContain(tags.indentBy(4)`
         'vue-jest': {
           tsConfig: ${'`${__dirname}/tsconfig.spec.json`'},
           babelConfig: ${'`${__dirname}/babel.config.js`'},
