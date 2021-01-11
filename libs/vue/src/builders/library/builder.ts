@@ -45,7 +45,7 @@ export function runBuilder(
         modifyTypescriptAliases(config, options, context);
         modifyCopyAssets(config, options, context, projectRoot);
         if (babelConfig) {
-          modifyBabelLoader(config, babelConfig);
+          modifyBabelLoader(config, babelConfig, context);
         }
       },
       css: options.css,

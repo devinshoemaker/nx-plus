@@ -71,9 +71,6 @@ export function modifyCachePaths(config, context: BuilderContext): void {
   const tsLoaderCachePath = getSystemPath(
     join(normalize(context.workspaceRoot), 'node_modules/.cache/ts-loader')
   );
-  const babelLoaderCachePath = getSystemPath(
-    join(normalize(context.workspaceRoot), 'node_modules/.cache/babel-loader')
-  );
 
   config.module
     .rule('vue')
@@ -101,13 +98,6 @@ export function modifyCachePaths(config, context: BuilderContext): void {
     .use('cache-loader')
     .tap((options) => {
       options.cacheDirectory = tsLoaderCachePath;
-      return options;
-    });
-  config.module
-    .rule('js')
-    .use('cache-loader')
-    .tap((options) => {
-      options.cacheDirectory = babelLoaderCachePath;
       return options;
     });
 }
@@ -161,7 +151,11 @@ export function modifyCopyAssets(
     .use(require('copy-webpack-plugin'), [transformedAssetPatterns]);
 }
 
-export function modifyBabelLoader(config, babelConfig: string) {
+export function modifyBabelLoader(
+  config,
+  babelConfig: string,
+  context: BuilderContext
+) {
   ['js', 'ts', 'tsx'].forEach((ext) =>
     config.module
       .rule(ext)
@@ -171,4 +165,15 @@ export function modifyBabelLoader(config, babelConfig: string) {
         configFile: babelConfig,
       }))
   );
+
+  const babelLoaderCachePath = getSystemPath(
+    join(normalize(context.workspaceRoot), 'node_modules/.cache/babel-loader')
+  );
+  config.module
+    .rule('js')
+    .use('cache-loader')
+    .tap((options) => {
+      options.cacheDirectory = babelLoaderCachePath;
+      return options;
+    });
 }
